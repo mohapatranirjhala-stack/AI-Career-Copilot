@@ -9,7 +9,12 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "firebase": "^12.14.0",
+    "groq-sdk": "^1.2.1",
+    "jspdf": "^4.2.1",
     "next": "16.2.7",
+    "pdf-parse-fixed": "^1.1.1",
     "react": "19.2.4",
     "react-dom": "19.2.4"
   },

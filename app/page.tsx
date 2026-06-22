@@ -1,4 +1,4 @@
-
+import Link from "next/link";
 export default function Home() {
   return (
     <main className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
@@ -24,9 +24,13 @@ export default function Home() {
 match job descriptions, and prepare for interviews using AI.
         </p>
 
-       <button className="bg-blue-600 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:bg-blue-700 shadow-xl">
-  Get Started Free
-</button>
+       
+
+<Link href="/login">
+  <button className="bg-blue-600 text-white px-6 py-3 rounded-lg">
+    Get Started Free
+  </button>
+</Link>
 
       </section>
 

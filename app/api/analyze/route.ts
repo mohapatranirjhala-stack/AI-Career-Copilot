@@ -153,10 +153,34 @@ const matchScore =
           totalSkills) *
           100
       );
+const profileScore =
+  (atsFactors.linkedinFound ? 5 : 0) +
+  (atsFactors.githubFound ? 5 : 0);
+
+const experienceScore =
+  atsFactors.internshipFound ? 10 : 0;
+
+const projectScore =
+  atsFactors.projectsFound ? 10 : 0;
+
+const achievementScore =
+  atsFactors.achievementsFound ? 10 : 0;
+
+const atsScore =
+Math.min(
+  100,
+  Math.round(
+    matchScore * 0.6 +
+    profileScore +
+    experienceScore +
+    projectScore +
+    achievementScore
+  )
+);
 
 
   return Response.json({
-  score,
+  score: atsScore,
   strengths,
   weaknesses: weaknesses.slice(0, 5),
   suggestions,

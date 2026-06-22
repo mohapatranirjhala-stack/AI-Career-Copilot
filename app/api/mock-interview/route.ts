@@ -4,6 +4,10 @@ import Groq from "groq-sdk";
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
 });
+console.log(
+  "GROQ KEY EXISTS:",
+  !!process.env.GROQ_API_KEY
+);
 
 export async function POST(
   request: Request
@@ -78,21 +82,24 @@ console.log(cleaned);
 
 const parsedData =
   JSON.parse(cleaned);
+  console.log("PARSED DATA");
+console.log(parsedData);
 
 return Response.json(
   parsedData
 );
-  } catch (error) {
-    console.error(error);
+  }catch (error: any) {
+  console.error(error);
 
-    return Response.json(
-      {
-        error:
-          "Failed to generate interview",
-      },
-      {
-        status: 500,
-      }
-    );
-  }
+  return Response.json(
+    {
+      error:
+        error.message ||
+        "Failed",
+    },
+    {
+      status: error.status || 500,
+    }
+  );
+}
 }

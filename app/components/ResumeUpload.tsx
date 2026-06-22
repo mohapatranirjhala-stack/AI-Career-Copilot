@@ -8,12 +8,74 @@ import {
   addDoc,
   getDocs,
 } from "firebase/firestore";
+import {
+  saveAnalysis
+} from "@/lib/saveAnalysis";
+
+import {
+  getAnalysis
+} from "@/lib/getAnalysis";
+
+import { auth }
+from "../../lib/firebase";
+
+import {
+  saveInterviewKit,
+  getInterviewKit,
+} from "@/lib/firestoreHelpers";
+import {
+  saveRoadmap,
+  getRoadmap,
+} from "@/lib/firestoreHelpers";
+import {
+  saveCoverLetter,
+  getCoverLetter,
+} from "@/lib/firestoreHelpers";
+import {
+  saveEvaluation,
+  getEvaluation,
+} from "@/lib/firestoreHelpers";
 
 import { db }
 from "@/lib/firebase";
+import { useEffect } from "react";
+type RoadmapStep = {
+  title: string;
+  description: string;
+};
 
-export default function ResumeUpload() {
+export default function ResumeUpload({
+
+ section,
+
+ resumeFile,
+ setResumeFile,
+
+ resumeAnalysis,
+ setResumeAnalysis,
+
+ atsScore,
+ setAtsScore,
+
+ matchedSkills,
+ setMatchedSkills,
+
+ missingSkills,
+ setMissingSkills,
+
+ 
+ setOverallScore
+
+}: any)
+  
+ {
  const [fileName, setFileName] = useState("");
+ useEffect(() => {
+  const saved = localStorage.getItem("resume-data");
+  if (saved) {
+    setAnalysis(JSON.parse(saved));
+  }
+}, []);
 const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [analysis, setAnalysis] = useState<any>(null);
   const [coverLetter, setCoverLetter] =
@@ -26,6 +88,9 @@ const [selectedFile, setSelectedFile] = useState<File | null>(null);
   useState("");
   const [roadmap, setRoadmap] =
   useState("");
+  const [interviewKit, setInterviewKit] =
+  useState<any>(null);
+  
   
   const [
   interviewQuestions,
@@ -45,6 +110,12 @@ const [history, setHistory] =
   const [jobDescription, setJobDescription] =
   useState("");
   const [resumeText, setResumeText] = useState("");
+  
+  const totalEvaluations =
+  Object.keys(evaluations).length;
+  
+
+  
   const handleFileChange = async (
   event: React.ChangeEvent<HTMLInputElement>
 ) => {
@@ -84,6 +155,8 @@ const handleAnalyze = async () => {
     alert("Please paste resume text");
     return;
   }
+  
+  
  
 
   const response = await fetch("/api/analyze", {
@@ -97,11 +170,69 @@ const handleAnalyze = async () => {
     }),
   });
 
-  const data = await response.json();
+  const data: any = await response.json();
 
-  setAnalysis(data);
+const roleResponse =
+  await fetch(
+    "/api/recommend-role",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type":
+          "application/json",
+      },
+      body: JSON.stringify({
+        strengths: data.strengths,
+      }),
+    }
+  );
+
+const roles =
+  await roleResponse.json();
+
+console.log(
+  "ROLE RECOMMENDATIONS"
+);
+
+console.log(roles);
+
+if (auth.currentUser) {
+
+  console.log(
+    "Saving analysis:",
+    data
+  );
+
+  await saveAnalysis(
+    auth.currentUser.uid,
+    {
+      ...data,
+      recommendedRoles: roles,
+    }
+  );
+
+  console.log(
+    "Analysis saved successfully"
+  );
+}
+
+setAnalysis({
+  ...data,
+  recommendedRoles: roles,
+});
+  localStorage.setItem("resume-data", JSON.stringify(data));
+  setMatchedSkills(
+  data.matchedSkills || []
+);
+
+setMissingSkills(
+  data.missingSkills || []
+);
+  
+  
 };
  const generateCoverLetter = async () => {
+ 
   const response = await fetch(
     "/api/cover-letter",
     {
@@ -119,10 +250,68 @@ const handleAnalyze = async () => {
 
   const data =
     await response.json();
+    if (auth.currentUser) {
+
+  await saveCoverLetter(
+    auth.currentUser.uid,
+    {
+      coverLetter:
+        data.coverLetter,
+    }
+  );
+}
 
   setCoverLetter(
     data.coverLetter
   );
+};
+const generateInterviewKit =
+async () => {
+  
+
+  const response =
+    await fetch(
+      "/api/interview-kit",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type":
+            "application/json",
+        },
+        body: JSON.stringify({
+          resumeText,
+          jobDescription,
+        }),
+      }
+    );
+
+  const data =
+    await response.json();
+    if (auth.currentUser) {
+
+  await saveInterviewKit(
+    auth.currentUser.uid,
+    data
+  );
+
+}
+    console.log("FULL DATA");
+console.log(data);
+
+console.log("TECH", data.technical);
+console.log("APTITUDE", data.aptitude);
+console.log("BEHAVIORAL", data.behavioral);
+console.log("HR", data.hr);
+
+  setInterviewKit(data);
+
+setMockInterview({
+  technical: data.technical,
+  aptitude: data.aptitude,
+  behavioral: data.behavioral,
+  hr: data.hr,
+});
+  console.log(data)
 };
 const downloadReport = () => {
   if (!analysis) {
@@ -436,6 +625,7 @@ const getAIAnalysis =
     setMockInterview(
       data
     );
+    console.log("Mock Interview Data:", data);
 };
 const evaluateAnswer =
   async (
@@ -444,6 +634,8 @@ const evaluateAnswer =
     candidateAnswer: string,
     key: string
   ) => {
+    
+    
 
     const response =
       await fetch(
@@ -467,6 +659,7 @@ const evaluateAnswer =
 
     const data =
       await response.json();
+      
 
     setEvaluations(
       (prev: any) => ({
@@ -483,6 +676,20 @@ const scores =
     (item: any) =>
       item.score
   );
+  const averageScore =
+  scores.length > 0
+    ? scores.reduce(
+        (a: number, b: number) =>
+          a + b,
+        0
+      ) / scores.length
+    : 0;
+    useEffect(() => {
+  setOverallScore(
+    averageScore
+  );
+}, [averageScore]);
+
 
 
   const generateQuestions =
@@ -505,6 +712,7 @@ const scores =
 
     const data =
       await response.json();
+      console.log("Interview Questions API:", data);
 
     setInterviewQuestions(
       data.questions
@@ -512,6 +720,7 @@ const scores =
   };
   const generateRoadmap =
   async () => {
+    
     if (!analysis) {
       alert(
         "Analyze resume first"
@@ -540,6 +749,17 @@ const scores =
 
     const data =
       await response.json();
+      if (auth.currentUser) {
+
+  await saveRoadmap(
+    auth.currentUser.uid,
+    {
+      roadmap:
+        data.roadmap,
+    }
+  );
+}
+      console.log("Roadmap API Response:", data);
 
     setRoadmap(
       data.roadmap
@@ -661,6 +881,9 @@ questions: any[]
 
   return (
     <div className="bg-white rounded-xl shadow-lg p-6 mt-8">
+      
+      
+
       <h2 className="text-2xl font-bold mb-4">
         Upload Resume
       </h2>
@@ -699,70 +922,85 @@ questions: any[]
   className="w-full border border-gray-300 rounded-lg p-3 mt-4"
   rows={8}
 />
+{section === "resume" && (
+  <div className="flex flex-wrap gap-3 mt-4">
 
     <button
-  onClick={handleAnalyze}
-  className="mt-4 bg-green-600 text-white px-6 py-3 rounded-lg"
->
-  Analyze Resume
-</button>
-<button
-  onClick={generateCoverLetter}
-  className="mt-4 ml-4 bg-purple-600 text-white px-6 py-3 rounded-lg"
->
-  Generate Cover Letter
-</button>
-<button
-  onClick={downloadReport}
-  className="mt-4 ml-4 bg-red-600 text-white px-6 py-3 rounded-lg"
->
-  Download ATS Report
-</button>
-<button
-  onClick={improveResume}
-  className="mt-4 ml-4 bg-indigo-600 text-white px-6 py-3 rounded-lg"
->
-  Improve Resume
-</button>
-<button
-  onClick={getAIAnalysis}
-  className="mt-4 ml-4 bg-indigo-600 text-white px-6 py-3 rounded-lg"
->
-  AI Analysis
-</button>
-<button
-  onClick={
-    generateMockInterview
-  }
-  className="mt-4 ml-4 bg-orange-600 text-white px-6 py-3 rounded-lg"
->
-  Mock Interview
-</button>
-<button
-  onClick={generateQuestions}
-  className="mt-4 ml-4 bg-orange-600 text-white px-6 py-3 rounded-lg"
->
-  Interview Questions
-</button>
-<button
-  onClick={generateRoadmap}
-  className="mt-4 ml-4 bg-teal-600 text-white px-6 py-3 rounded-lg"
->
-  Learning Roadmap
-</button>
-<button
-  onClick={saveReport}
-  className="mt-4 ml-4 bg-cyan-600 text-white px-6 py-3 rounded-lg"
->
-  Save Report
-</button>
+      onClick={handleAnalyze}
+      className="bg-green-600 text-white px-6 py-3 rounded-lg"
+    >
+      Analyze Resume
+    </button>
 
-<button
-  onClick={loadHistory}
-  className="mt-4 ml-4 bg-gray-700 text-white px-6 py-3 rounded-lg"
->
-  View History
-</button>
+    <button
+      onClick={generateCoverLetter}
+      className="bg-purple-600 text-white px-6 py-3 rounded-lg"
+    >
+      Generate Cover Letter
+    </button>
+
+    <button
+      onClick={downloadReport}
+      className="bg-red-600 text-white px-6 py-3 rounded-lg"
+    >
+      Download ATS Report
+    </button>
+
+    <button
+      onClick={improveResume}
+      className="bg-indigo-600 text-white px-6 py-3 rounded-lg"
+    >
+      Improve Resume
+    </button>
+
+    <button
+      onClick={getAIAnalysis}
+      className="bg-indigo-600 text-white px-6 py-3 rounded-lg"
+    >
+      AI Analysis
+    </button>
+
+    <button
+      onClick={saveReport}
+      className="bg-cyan-600 text-white px-6 py-3 rounded-lg"
+    >
+      Save Report
+    </button>
+
+  </div>
+)}
+
+{section === "interview" && (
+  <button
+    onClick={generateInterviewKit}
+    className="mt-4 bg-orange-600 text-white px-6 py-3 rounded-lg"
+  >
+    Generate Interview Kit
+  </button>
+)}
+{section === "roadmap" && (
+  <div className="mt-4">
+
+    <button
+      onClick={generateRoadmap}
+      className="bg-teal-600 text-white px-6 py-3 rounded-lg"
+    >
+      Generate Learning Roadmap
+    </button>
+
+  </div>
+)}
+
+
+
+{section === "history" && (
+  <button
+    onClick={loadHistory}
+    className="mt-4 bg-gray-700 text-white px-6 py-3 rounded-lg"
+  >
+    View History
+  </button>
+)}
 {analysis && (
   <div className="mt-6 bg-white shadow-lg rounded-xl p-6">
 
@@ -944,94 +1182,64 @@ questions: any[]
 
   </div>
 )}
-  {mockInterview && (
 
-  <div className="mt-6 bg-yellow-50 p-6 rounded-lg"><h2 className="text-2xl font-bold mb-6">
-  AI Mock Interview
-</h2>
+{section === "interview" &&
+  interviewKit && (
 
-{renderInterviewRound(
-  "Technical Round",
-  "text-blue-700",
-  "technical",
-  mockInterview.technical
-)}
+  <div className="mt-6 bg-yellow-50 p-6 rounded-lg">
 
-{renderInterviewRound(
-  "Aptitude Round",
-  "text-green-700",
-  "aptitude",
-  mockInterview.aptitude
-)}
-
-{renderInterviewRound(
-  "Behavioral Round",
-  "text-purple-700",
-  "behavioral",
-  mockInterview.behavioral
-)}
-
-{renderInterviewRound(
-  "HR Round",
-  "text-red-700",
-  "hr",
-  mockInterview.hr
-)}
-
-{scores.length > 0 && (
-  <div className="bg-blue-50 p-6 rounded-xl mt-8 border">
-
-    <h2 className="text-2xl font-bold">
-      Final Interview Score
+    <h2 className="text-2xl font-bold mb-6">
+      AI Interview Preparation
     </h2>
 
-    <p className="text-5xl font-bold text-blue-700 mt-3">
-      {overallScore}/10
-    </p>
 
-    <p className="mt-4 text-lg font-medium">
+    {interviewKit?.technical &&
+  renderInterviewRound(
+    "Technical Round",
+    "text-blue-700",
+    "technical",
+    interviewKit.technical
+  )}
 
-      {Number(overallScore) >= 9
-        ? "🏆 Excellent"
-        : Number(overallScore) >= 8
-        ? "⭐ Very Good"
-        : Number(overallScore) >= 7
-        ? "👍 Good"
-        : Number(overallScore) >= 6
-        ? "⚠ Average"
-        : "❌ Needs Improvement"}
+    {mockInterview?.aptitude &&
+      renderInterviewRound(
+        "Aptitude Round",
+        "text-green-700",
+        "aptitude",
+        interviewKit.aptitude
+      )}
 
-    </p>
+    {mockInterview?.behavioral &&
+      renderInterviewRound(
+        "Behavioral Round",
+        "text-purple-700",
+        "behavioral",
+        interviewKit.behavioral
+      )}
 
+    {mockInterview?.hr &&
+      renderInterviewRound(
+        "HR Round",
+        "text-red-700",
+        "hr",
+        interviewKit.hr
+      )}
+
+    
   </div>
 )}
 
-  </div>
-)}
+ 
+
+    
 </div>
-{coverLetter && (
-  <div className="mt-6 bg-purple-50 p-4 rounded-lg">
-    <h3 className="text-xl font-bold mb-3">
-      Cover Letter
-    </h3>
-
-    <pre className="whitespace-pre-wrap">
-      {coverLetter}
-    </pre>
+{section === "resume" && analysis && (
+  <div className="mt-6 bg-white shadow-lg rounded-xl p-6">
+    {/* ATS Report Content */}
   </div>
 )}
-{improvement && (
-  <div className="mt-6 bg-indigo-50 p-4 rounded-lg">
-    <h3 className="text-xl font-bold mb-3">
-      Resume Improvement AI
-    </h3>
 
-    <pre className="whitespace-pre-wrap">
-      {improvement}
-    </pre>
-  </div>
-)}
-{aiAnalysis && (
+{section === "resume" && aiAnalysis && (
   <div className="mt-6 bg-indigo-50 p-4 rounded-lg">
     <h3 className="text-xl font-bold mb-3">
       AI Resume Analysis
@@ -1042,19 +1250,33 @@ questions: any[]
     </pre>
   </div>
 )}
-{interviewQuestions && (
-  <div className="mt-6 bg-orange-50 p-4 rounded-lg">
+
+{section === "resume" && coverLetter && (
+  <div className="mt-6 bg-purple-50 p-4 rounded-lg">
     <h3 className="text-xl font-bold mb-3">
-      AI Interview Questions
+      Cover Letter
     </h3>
 
     <pre className="whitespace-pre-wrap">
-      {interviewQuestions}
+      {coverLetter}
     </pre>
   </div>
 )}
-{roadmap && (
+
+{section === "resume" && improvement && (
+  <div className="mt-6 bg-indigo-50 p-4 rounded-lg">
+    <h3 className="text-xl font-bold mb-3">
+      Resume Improvement AI
+    </h3>
+
+    <pre className="whitespace-pre-wrap">
+      {improvement}
+    </pre>
+  </div>
+)}
+{section === "roadmap" && roadmap && (
   <div className="mt-6 bg-teal-50 p-4 rounded-lg">
+
     <h3 className="text-xl font-bold mb-3">
       AI Learning Roadmap
     </h3>
@@ -1062,73 +1284,67 @@ questions: any[]
     <pre className="whitespace-pre-wrap">
       {roadmap}
     </pre>
+
   </div>
 )}
-{history.length > 0 && (
+{section === "history" && history.length > 0 && (
   <div className="mt-8 bg-gray-50 p-4 rounded-lg">
 
-    <h3 className="text-2xl font-bold mb-4">
-      Resume History
-    </h3>
+  <h3 className="text-2xl font-bold mb-4">
+    Resume History
+  </h3>
 
-    {history.map(
-      (report: any) => (
-        <div
-          key={report.id}
-          className="border rounded-lg p-4 mb-4 bg-white"
-        >
-          <p>
-            Resume:
-            {report.fileName}
-          </p>
+  {Array.isArray(history) &&
+    history.map((report: any) => (
+      <div
+        key={report.id}
+        className="border rounded-lg p-4 mb-4 bg-white"
+      >
+        <p>
+          Resume: {report.fileName}
+        </p>
 
-          <p>
-            ATS Score:
-            {report.atsScore}%
-          </p>
+        <p>
+          ATS Score: {report.atsScore}%
+        </p>
 
-          <p>
-            Match Score:
-            {report.matchScore}%
-          </p>
+        <p>
+          Match Score: {report.matchScore}%
+        </p>
 
-          <p>
-            Date:
-            {new Date(
-              report.createdAt?.seconds *
-                1000
-            ).toLocaleString()}
-          </p>
+        <p>
+          Date:{" "}
+          {report.createdAt?.seconds
+            ? new Date(report.createdAt.seconds * 1000).toLocaleString()
+            : "N/A"}
+        </p>
 
-          <details className="mt-3">
-            <summary>
-              View Full Report
-            </summary>
+        <details className="mt-3">
+          <summary>View Full Report</summary>
 
-            <pre className="whitespace-pre-wrap mt-3">
-              {report.aiAnalysis}
-            </pre>
+          <pre className="whitespace-pre-wrap mt-3">
+            {report.aiAnalysis}
+          </pre>
 
-            <pre className="whitespace-pre-wrap mt-3">
-              {report.coverLetter}
-            </pre>
+          <pre className="whitespace-pre-wrap mt-3">
+            {report.coverLetter}
+          </pre>
 
-            <pre className="whitespace-pre-wrap mt-3">
-              {report.interviewQuestions}
-            </pre>
+          <pre className="whitespace-pre-wrap mt-3">
+            {report.interviewQuestions}
+          </pre>
 
-            <pre className="whitespace-pre-wrap mt-3">
-              {report.roadmap}
-            </pre>
+          <pre className="whitespace-pre-wrap mt-3">
+            {report.roadmap}
+          </pre>
 
-            <pre className="whitespace-pre-wrap mt-3">
-              {report.improvement}
-            </pre>
-          </details>
-        </div>
-      )
-    )}
-  </div>
+          <pre className="whitespace-pre-wrap mt-3">
+            {report.improvement}
+          </pre>
+        </details>
+      </div>
+    ))}
+</div>
 )}
 
   </div>

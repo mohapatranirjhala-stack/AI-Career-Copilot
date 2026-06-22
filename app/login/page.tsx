@@ -5,6 +5,7 @@ import { useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../lib/firebase";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -53,6 +54,15 @@ export default function Login() {
         >
           Login
         </button>
+        <p className="text-center mt-4">
+  Don't have an account?{" "}
+  <Link
+    href="/register"
+    className="text-blue-600 font-semibold"
+  >
+    Register
+  </Link>
+</p>
 
       </div>
     </div>

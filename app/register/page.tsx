@@ -4,6 +4,7 @@
 import { useState } from "react";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../lib/firebase";
+import Link from "next/link";
 
 export default function Register() {
   const [email, setEmail] = useState("");
@@ -51,6 +52,15 @@ export default function Register() {
         >
           Create Account
         </button>
+        <p className="text-center mt-4">
+  Already have an account?{" "}
+  <Link
+    href="/login"
+    className="text-blue-600 font-semibold"
+  >
+    Login
+  </Link>
+</p>
 
       </div>
     </div>

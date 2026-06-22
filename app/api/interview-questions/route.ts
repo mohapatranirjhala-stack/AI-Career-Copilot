@@ -5,6 +5,10 @@ import Groq from "groq-sdk";
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
 });
+console.log(
+  "GROQ KEY EXISTS:",
+  !!process.env.GROQ_API_KEY
+);
 
 export async function POST(
   request: Request
@@ -56,13 +60,15 @@ Return plain text only.
         completion.choices[0].message
           .content,
     });
-  } catch (error) {
-    return NextResponse.json(
-      {
-        error:
-          "Failed to generate questions",
-      },
-      { status: 500 }
-    );
-  }
+  }catch (error: any) {
+  console.error(error);
+
+  return NextResponse.json(
+    {
+      questions:
+        "Groq daily token limit reached. Please try again tomorrow."
+    },
+    { status: 200 }
+  );
+}
 }

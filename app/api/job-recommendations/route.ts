@@ -1,23 +1,27 @@
 
-import { jobs } from "@/app/data/jobs";
+import { NextResponse } from "next/server";
 
-export async function POST(
-  req: Request
-) {
+export async function POST(req: Request) {
 
-  const body =
-    await req.json();
+  const { role } = await req.json();
 
-  const role =
-    body.role;
+  const response = await fetch(
+    `https://jsearch.p.rapidapi.com/search?query=${encodeURIComponent(
+      role + " in India"
+    )}&page=1&num_pages=3`,
+    {
+      headers: {
+        "X-RapidAPI-Key":
+          process.env.RAPIDAPI_KEY!,
+        "X-RapidAPI-Host":
+          "jsearch.p.rapidapi.com",
+      },
+    }
+  );
 
-  const matches =
-    jobs.filter(
-      (job) =>
-        job.role === role
-    );
+  const data = await response.json();
 
-  return Response.json(
-    matches
+  return NextResponse.json(
+    data.data || []
   );
 }

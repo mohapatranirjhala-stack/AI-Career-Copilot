@@ -13,7 +13,30 @@ import {
   updateDoc,
   
 } from "firebase/firestore";
+import {
+  
+} from "firebase/firestore";
 
+export const getResumeHistory =
+  async () => {
+
+    const snapshot =
+      await getDocs(
+        collection(
+          db,
+          "resumeReports"
+        )
+      );
+      
+
+    return snapshot.docs.map(
+      (doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })
+    );
+
+  };
 export const saveApplication =
   async (
     userId: string,

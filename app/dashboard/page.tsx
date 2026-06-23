@@ -16,8 +16,20 @@ from "./SkillsBarChart";
 import {
   getAnalysis,
   getApplications,
-  saveApplication
+  saveApplication,
+  updateApplicationStatus,
+  getResumeHistory
 } from "../../lib/firestoreHelpers";
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  Tooltip,
+} from "recharts";
+
 
 
 export default function Dashboard() {
@@ -55,11 +67,46 @@ useState<any[]>([]);
 const [applications,
 setApplications] =
 useState<any[]>([]);
+const [showApplicationForm,
+setShowApplicationForm] =
+useState(false);
+const [marketTrendData,
+setMarketTrendData] =
+useState<any[]>([]);
+
+const [companyName,
+setCompanyName] =
+useState("");
+
+const [roleName,
+setRoleName] =
+useState("");
+const [
+  resumeHistory,
+  setResumeHistory,
+  
+] = useState<any[]>([]);
 
   const [activeTab, setActiveTab] =
     useState("dashboard");
     const [matchedSkills, setMatchedSkills] =
   useState<string[]>([]);
+  const [marketInsights, setMarketInsights] =
+  useState({
+    ai: 0,
+    cloud: 0,
+    devops: 0,
+    data: 0,
+    fullstack: 0,
+  });
+  const [topSkills, setTopSkills] =
+  useState<
+    { skill: string; count: number }[]
+  >([]);
+  const [skillLeaderboard, setSkillLeaderboard] =
+  useState<
+    { skill: string; count: number }[]
+  >([]);
   const [missingSkills, setMissingSkills] =
   useState<string[]>([]);
   useEffect(() => {
@@ -131,6 +178,24 @@ console.log(
 
 console.log(apps);
 setApplications(apps);
+const history =
+  await getResumeHistory();
+
+setResumeHistory(
+  history
+);
+console.log("HISTORY DATA");
+console.log(history);
+
+console.log(
+  "HISTORY LENGTH"
+);
+console.log(
+  history.length
+);
+console.log(
+  "HISTORY"
+);
         
 
       }
@@ -172,10 +237,293 @@ useEffect(() => {
       const data =
         await response.json();
 
-      setJobs(data);
+      setJobs(
+  data.map((job: any) => ({
+    title: job.job_title,
+    company: job.employer_name,
+    location:
+      job.job_city ||
+      job.job_country,
+    applyLink:
+      job.job_apply_link,
+  }))
+);
+const insights = {
+  ai: 0,
+  cloud: 0,
+  devops: 0,
+  data: 0,
+  fullstack: 0,
+};
+
+data.forEach((job: any) => {
+
+  const title =
+    job.job_title?.toLowerCase() || "";
+
+  if (
+    title.includes("ai") ||
+    title.includes("ml") ||
+    title.includes("machine learning")
+  )
+    insights.ai++;
+
+  if (
+    title.includes("cloud") ||
+    title.includes("aws") ||
+    title.includes("azure")
+  )
+    insights.cloud++;
+
+  if (
+    title.includes("devops") ||
+    title.includes("sre")
+  )
+    insights.devops++;
+
+  if (
+    title.includes("data")
+  )
+    insights.data++;
+
+  if (
+    title.includes("full stack") ||
+    title.includes("frontend") ||
+    title.includes("backend")
+  )
+    insights.fullstack++;
+
+});
+
+setMarketInsights(insights);
+const skillCounter:
+  Record<string, number> = {};
+
+const trackedSkills = [
+
+  "AWS",
+  "Azure",
+  "GCP",
+
+  "React",
+  "Next.js",
+  "TypeScript",
+
+  "Node.js",
+  "Python",
+  "Java",
+
+  "Docker",
+  "Kubernetes",
+
+  "Terraform",
+
+  "SQL",
+  "MongoDB",
+
+  "DevOps",
+  "CI/CD",
+
+];
+
+data.forEach(
+  (job: any) => {
+
+    const text = `
+      ${job.job_title || ""}
+      ${job.job_description || ""}
+    `.toLowerCase();
+
+    trackedSkills.forEach(
+      (skill) => {
+
+        if (
+          text.includes(
+            skill.toLowerCase()
+          )
+        ) {
+
+          skillCounter[
+            skill
+          ] =
+            (
+              skillCounter[
+                skill
+              ] || 0
+            ) + 1;
+
+        }
+
+      }
+    );
+
+  }
+);
+
+const marketRankedSkills =
+  Object.entries(
+    skillCounter
+  )
+    .map(
+      ([skill, count]) => ({
+        skill,
+        count,
+      })
+    )
+    .sort(
+      (a, b) =>
+        Number(b.count) -
+        Number(a.count)
+    )
+    .slice(0, 5);
+
+setTopSkills(
+  marketRankedSkills
+);
+
+setSkillLeaderboard(
+  marketRankedSkills
+);
+
+console.log(
+  "TOP SKILLS"
+);
+
+console.log(
+  marketRankedSkills
+);
+    };
+    const loadMarketAnalytics =
+  async () => {
+
+    const response =
+      await fetch(
+        "/api/job-recommendations",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            role:
+              recommendedRoles[0]
+                ?.role ||
+              "Software Engineer",
+          }),
+        }
+      );
+
+    const jobs =
+      await response.json();
+
+    const counts = {
+
+      ai: 0,
+
+      cloud: 0,
+
+      devops: 0,
+
+      data: 0,
+
+      fullstack: 0,
+
     };
 
+    jobs.forEach(
+      (job: any) => {
+
+        const text = `
+          ${job.job_title}
+          ${job.job_description}
+        `.toLowerCase();
+
+        if (
+          text.includes("ai") ||
+          text.includes("machine learning") ||
+          text.includes("llm") ||
+          text.includes("generative ai")
+        )
+          counts.ai++;
+
+        if (
+          text.includes("aws") ||
+          text.includes("azure") ||
+          text.includes("gcp") ||
+          text.includes("cloud")
+        )
+          counts.cloud++;
+
+        if (
+          text.includes("docker") ||
+          text.includes("kubernetes") ||
+          text.includes("terraform") ||
+          text.includes("devops")
+        )
+          counts.devops++;
+
+        if (
+          text.includes("sql") ||
+          text.includes("spark") ||
+          text.includes("etl") ||
+          text.includes("airflow")
+        )
+          counts.data++;
+
+        if (
+          text.includes("react") ||
+          text.includes("node") ||
+          text.includes("next.js") ||
+          text.includes("typescript")
+        )
+          counts.fullstack++;
+
+      }
+    );
+
+    const results = [
+
+      {
+        domain: "AI / ML",
+        jobs: counts.ai,
+      },
+
+      {
+        domain: "Cloud",
+        jobs: counts.cloud,
+      },
+
+      {
+        domain: "DevOps",
+        jobs: counts.devops,
+      },
+
+      {
+        domain: "Data",
+        jobs: counts.data,
+      },
+
+      {
+        domain: "Full Stack",
+        jobs: counts.fullstack,
+      },
+
+    ].sort(
+      (a, b) =>
+        b.jobs - a.jobs
+    );
+
+    setMarketTrendData(
+      results
+    );
+
+  };
+  
+
   loadJobs();
+  loadMarketAnalytics();
+  
 
 }, [recommendedRoles]);
 useEffect(() => {
@@ -321,6 +669,95 @@ const careerHealthScore =
       readiness * 0.2
     )
   );
+  const handleStatusChange =
+  async (
+    applicationId: string,
+    status: string
+  ) => {
+
+    if (!auth.currentUser)
+      return;
+
+    await updateApplicationStatus(
+      auth.currentUser.uid,
+      applicationId,
+      status
+    );
+
+    const apps =
+      await getApplications(
+        auth.currentUser.uid
+      );
+
+    setApplications(apps);
+
+  };
+  <p className="text-red-500">
+  Resume History Count:
+  {resumeHistory.length}
+</p>
+useEffect(() => {
+  console.log("RESUME HISTORY");
+  console.log(resumeHistory);
+  console.log("COUNT");
+  console.log(resumeHistory.length);
+}, [resumeHistory]);
+
+const handleAddApplication =
+  async () => {
+
+    if (
+      !auth.currentUser
+    )
+      return;
+
+    await saveApplication(
+      auth.currentUser.uid,
+      {
+
+        company:
+          companyName,
+
+        role:
+          roleName,
+
+        status:
+          "Applied",
+
+        appliedDate:
+          new Date()
+            .toISOString(),
+
+      }
+    );
+
+    const apps =
+      await getApplications(
+        auth.currentUser.uid
+      );
+
+    setApplications(apps);
+
+    setCompanyName("");
+    setRoleName("");
+
+    setShowApplicationForm(
+      false
+    );
+
+  };
+  const chartData =
+  marketTrendData.map(
+    (item) => ({
+      domain: item.domain,
+      jobs: item.jobs,
+    })
+  );
+  const mostValuableSkill =
+  topSkills.length > 0
+    ? topSkills[0]
+    : null;
+    
 
   return (
     <div className="flex">
@@ -399,7 +836,7 @@ const careerHealthScore =
 
               <StatsCard
                 title="History Records"
-                value={history.length}
+                value={resumeHistory.length}
                 icon="📊"
               />
 
@@ -612,8 +1049,138 @@ const careerHealthScore =
               </a>
 
             </div>
+            
+
+
+<div
+  className="
+  mt-6
+  bg-blue-50
+  p-3
+  rounded-lg
+  "
+>
+
+  <p className="font-semibold">
+    🤖 Career Recommendation
+  </p>
+
+  <p className="text-sm text-gray-600">
+
+    Focus on the top 3 skills currently appearing most frequently across live job listings.
+
+  </p>
+
+</div>
+<div className="mt-6">
+
+  <p className="mb-3">
+  Skills Found: {topSkills.length}
+</p>
+
+{topSkills.map(
+  (item) => (
+
+    <div
+      key={item.skill}
+      className="mb-3"
+    >
+
+      <div className="flex justify-between mb-1">
+
+        <span>
+          {item.skill}
+        </span>
+
+        <span>
+          {Math.round(
+  (item.count / jobs.length) * 100
+)}%
+        </span>
+
+      </div>
+
+      <div className="w-full bg-gray-200 rounded-full h-3">
+
+        <div
+          className="
+          bg-blue-500
+          h-3
+          rounded-full
+          "
+          style={{
+            width: `${
+              (item.count /
+                topSkills[0].count) *
+              100
+            }%`
+          }}
+        />
+
+      </div>
+
+    </div>
+
+  )
+)}
+<hr className="my-6" />
+  <h4
+  className="
+  font-bold
+  mt-8
+  mb-4
+  "
+>
+  📈 Current Job Market Analytics
+</h4>
+
+  <p className="text-sm">
+
+    AI, Cloud and DevOps are currently among the most actively hiring tech domains based on live job listings.
+
+
+  </p>
+  <h4 className="font-bold mt-8 mb-4">
+  📈 Technology Domain Demand
+</h4>
+
+<ResponsiveContainer
+  width="100%"
+  height={250}
+>
+
+  <LineChart
+    data={chartData}
+  >
+
+    <CartesianGrid
+      strokeDasharray="3 3"
+    />
+
+    <XAxis
+      dataKey="domain"
+    />
+
+    <YAxis />
+
+    <Tooltip />
+
+    <Line
+      type="monotone"
+      dataKey="jobs"
+      strokeWidth={3}
+    />
+
+  </LineChart>
+
+</ResponsiveContainer>
+  
+
+</div>
+
 
           </div>
+          
 
         )}
 
@@ -631,7 +1198,18 @@ const careerHealthScore =
 
   {/* Recommended Jobs */}
 
-  <div className="bg-white p-6 rounded-xl shadow">
+  <div
+  className="
+  bg-white
+  rounded-xl
+  shadow
+  p-6
+  sticky top-6
+  max-h-[700px]
+  overflow-y-auto
+  
+  "
+>
 
     <h3 className="font-bold text-lg mb-4">
       💼 Recommended Jobs
@@ -644,54 +1222,35 @@ const careerHealthScore =
         className="border-b py-3"
       >
 
-        <p className="font-semibold">
-          {job.title}
-        </p>
+<p className="font-semibold">
+  {job.title}
+</p>
 
-        <p className="text-gray-500">
-          {job.company}
-        </p>
+<p className="text-gray-500">
+  {job.company}
+</p>
 
-        <p className="text-sm">
-          {job.location}
-        </p>
-        <button
-  onClick={async () => {
+<p className="text-sm">
+  {job.location}
+</p>
 
-    if (!auth.currentUser) return;
-
-    await saveApplication(
-      auth.currentUser.uid,
-      {
-        role: job.title,
-        company: job.company,
-        status: "Applied",
-        createdAt: new Date().toISOString(),
-      }
-    );
-
-    const apps =
-      await getApplications(
-        auth.currentUser.uid
-      );
-
-    setApplications(apps);
-
-    alert("Application tracked");
-
-  }}
-
+<a
+  href={job.applyLink}
+  target="_blank"
+  rel="noopener noreferrer"
   className="
+  inline-block
   mt-2
-  bg-green-600
+  bg-blue-600
   text-white
   px-3
-  py-1
+  py-2
   rounded-lg
   "
 >
-  Track Application
-</button>
+  Apply Now
+</a>
+       
 
       </div>
 
@@ -838,9 +1397,89 @@ const careerHealthScore =
     </div>
 
   </div>
+  <button
+  onClick={() =>
+    setShowApplicationForm(
+      !showApplicationForm
+    )
+  }
+  className="
+  mt-4
+  bg-blue-600
+  text-white
+  px-4
+  py-2
+  rounded-lg
+  "
+>
+  ➕ Add Application
+</button>
+{showApplicationForm && (
+
+  <div className="mt-4 space-y-3">
+
+    <input
+      type="text"
+      placeholder="Company Name"
+      value={companyName}
+      onChange={(e) =>
+        setCompanyName(
+          e.target.value
+        )
+      }
+      className="
+      w-full
+      border
+      p-2
+      rounded-lg
+      "
+    />
+
+    <input
+      type="text"
+      placeholder="Role"
+      value={roleName}
+      onChange={(e) =>
+        setRoleName(
+          e.target.value
+        )
+      }
+      className="
+      w-full
+      border
+      p-2
+      rounded-lg
+      "
+    />
+
+    <button
+      onClick={handleAddApplication}
+      className="
+      bg-green-600
+      text-white
+      px-4
+      py-2
+      rounded-lg
+      "
+    >
+      Save Application
+    </button>
+
+  </div>
+
+)}
 
 </div>
-<div className="bg-white p-6 rounded-xl shadow">
+<div
+  className="
+  bg-white
+  rounded-xl
+  shadow
+  p-6
+  h-[650px]
+  overflow-y-auto
+  "
+>
 
   <h3 className="font-bold text-lg mb-4">
     📋 My Applications
@@ -857,28 +1496,105 @@ const careerHealthScore =
     applications.map((app) => (
 
       <div
-        key={app.id}
-        className="
-        border-b
-        py-3
-        "
-      >
+  key={app.id}
+  className="
+  border-b
+  py-3
+  "
+>
 
-        <p className="font-semibold">
-          {app.role}
-        </p>
+  <p className="font-semibold">
+    {app.role}
+  </p>
 
-        <p className="text-gray-500">
-          {app.company}
-        </p>
+  <p className="text-gray-500">
+    {app.company}
+  </p>
 
-        <p className="text-sm">
-          Status:
-          {" "}
-          {app.status}
-        </p>
+  <p className="text-sm">
+    Status:
+    {app.status}
+  </p>
 
-      </div>
+  {app.status ===
+    "Pending" && (
+      
+
+    <button
+      onClick={() =>
+        handleStatusChange(
+          app.id,
+          "Applied"
+        )
+      }
+      className="
+      mt-2
+      bg-green-600
+      text-white
+      px-3
+      py-1
+      rounded-lg
+      "
+    >
+      ✓ I Applied
+    </button>
+
+  )}
+  <div className="flex gap-2 mt-2 flex-wrap">
+    <button
+  onClick={() =>
+    handleStatusChange(
+      app.id,
+      "Applied"
+    )
+  }
+  className="
+  px-2 py-1
+  bg-gray-500
+  text-white
+  rounded
+  "
+>
+  Applied
+</button>
+
+  <button
+    onClick={() =>
+      handleStatusChange(
+        app.id,
+        "Interview"
+      )
+    }
+  >
+    Interview
+  </button>
+
+  <button
+    onClick={() =>
+      handleStatusChange(
+        app.id,
+        "Rejected"
+      )
+    }
+  >
+    Rejected
+  </button>
+  
+
+  <button
+    onClick={() =>
+      handleStatusChange(
+        app.id,
+        "Offer"
+      )
+    }
+  >
+    Offer
+  </button>
+
+</div>
+
+</div>
 
     ))
 
@@ -889,7 +1605,16 @@ const careerHealthScore =
 
 {/* Resume Strengths */}
 
-<div className="bg-white p-6 rounded-xl shadow">
+<div
+  className="
+  bg-white
+  rounded-xl
+  shadow
+  p-6
+  h-[650px]
+  overflow-y-auto
+  "
+>
 
   <h3 className="font-bold text-lg mb-4">
     💪 Resume Strengths
@@ -917,6 +1642,123 @@ const careerHealthScore =
     )}
 
   </div>
+  <h4 className="font-bold mt-6 mb-3">
+  🚀 Skill Gap Analysis
+</h4>
+
+{missingSkills?.map((skill) => (
+  <div
+    key={skill}
+    className="
+    flex
+    justify-between
+    mb-2
+    "
+  >
+    <span>{skill}</span>
+
+    <span className="text-red-500">
+      Missing
+    </span>
+  </div>
+
+  
+))}
+
+<div className="mt-6">
+  <h4 className="font-bold mb-3">
+    📄 ATS Breakdown
+  </h4>
+
+  <div className="space-y-2">
+
+    <div className="flex justify-between">
+      <span>Keywords</span>
+      <span>85%</span>
+    </div>
+
+    <div className="flex justify-between">
+      <span>Formatting</span>
+      <span>92%</span>
+    </div>
+
+    <div className="flex justify-between">
+      <span>Skills Coverage</span>
+      <span>78%</span>
+    </div>
+
+  </div>
+  <div className="mt-6">
+
+  <h4 className="font-bold mb-3">
+    🔥 Most Valuable Skill
+  </h4>
+
+  {mostValuableSkill && (
+
+    <div
+      className="
+      bg-orange-50
+      p-4
+      rounded-lg
+      "
+    >
+
+      <p className="font-semibold text-lg">
+        {mostValuableSkill.skill}
+      </p>
+
+      <p
+        className="
+        text-sm
+        text-gray-600
+        mt-1
+        "
+      >
+
+        Appears in
+
+        {" "}
+
+        {mostValuableSkill.count}
+
+        {" "}
+
+        current job listings.
+
+      </p>
+
+    </div>
+
+  )}
+
+</div>
+<div className="mt-6">
+
+  <h4 className="font-bold mb-3">
+    🤖 Market Insight
+  </h4>
+
+  <div
+    className="
+    bg-blue-50
+    p-4
+    rounded-lg
+    "
+  >
+
+    <p className="text-sm">
+
+      {mostValuableSkill
+        ? `${mostValuableSkill.skill} is currently the strongest market signal in your profile.`
+        : "No market insight available."}
+
+    </p>
+
+  </div>
+
+</div>
+</div>
 
 </div>
 

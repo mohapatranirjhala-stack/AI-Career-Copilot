@@ -541,6 +541,7 @@ const saveReport =
           ...doc.data(),
         })
       );
+      
 
     setHistory(
       reports

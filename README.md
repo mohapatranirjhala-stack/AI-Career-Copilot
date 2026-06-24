@@ -1,4 +1,9 @@
 🚀 AI Career Copilot
+![Next.js](https://img.shields.io/badge/Next.js-16-black)
+![TypeScript](https://img.shields.io/badge/TypeScript-blue)
+![Firebase](https://img.shields.io/badge/Firebase-orange)
+![Groq](https://img.shields.io/badge/Groq-LLM-green)
+![Vercel](https://img.shields.io/badge/Deployment-Vercel-black)
 
 AI Career Copilot is an end-to-end AI-powered career development platform that helps candidates analyze resumes, improve ATS performance, identify skill gaps, prepare for interviews, and discover real-time job opportunities.
 

@@ -1,36 +1,141 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+🚀 AI Career Copilot
 
-## Getting Started
+AI Career Copilot is an end-to-end AI-powered career development platform that helps candidates analyze resumes, improve ATS performance, identify skill gaps, prepare for interviews, and discover real-time job opportunities.
 
-First, run the development server:
+🎯 Problem Statement
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Many job seekers struggle with:
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- Understanding why their resumes are rejected
+- Improving ATS compatibility
+- Identifying missing skills
+- Finding relevant job opportunities
+- Preparing for technical interviews
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+AI Career Copilot solves these challenges using Generative AI, Resume Intelligence, and Live Job Market Analytics.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+🌟 Key Features
 
-## Learn More
+📄 AI Resume Analysis
 
-To learn more about Next.js, take a look at the following resources:
+- Resume PDF upload
+- Skill extraction
+- Experience analysis
+- Achievement detection
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+🎯 ATS Score Engine
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Skills matching
+- Profile evaluation
+- Experience scoring
+- Project scoring
+- Achievement scoring
 
-## Deploy on Vercel
+🛣️ Personalized Career Roadmap
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- AI-generated learning paths
+- Skill-gap analysis
+- Growth recommendations
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+🎤 Interview Preparation
+
+- AI-generated interview questions
+- Mock interview support
+- Role-specific preparation
+
+💼 Live Job Recommendations
+
+- Real-time job listings via JSearch API
+- Personalized role matching
+- Direct application links
+
+📈 Live Market Analytics
+
+- Technology demand trends
+- Top skills in demand
+- Market intelligence insights
+
+---
+
+🏗️ System Architecture
+
+Resume Upload
+↓
+PDF Extraction
+↓
+Groq AI Analysis
+↓
+ATS Scoring Engine
+↓
+Career Recommendations
+↓
+Live Job Market Analytics (JSearch API)
+
+---
+
+🛠️ Tech Stack
+
+Frontend
+
+- Next.js
+- React
+- TypeScript
+- Tailwind CSS
+
+Backend
+
+- Next.js API Routes
+
+AI
+
+- Groq API
+
+Database
+
+- Firebase
+
+External APIs
+
+- RapidAPI JSearch
+
+Deployment
+
+- GitHub Actions (CI/CD)
+- Vercel
+
+---
+
+🚀 Live Demo
+
+https://ai-career-copilot-pwyh9noes-nirjhala-mohapatra-s-projects.vercel.app/
+
+---
+
+📸 Screenshots
+
+Add screenshots for:
+
+- Dashboard
+- ATS Analysis
+- Career Roadmap
+- Interview Preparation
+- Job Recommendations
+- Market Analytics
+
+---
+
+🔮 Future Enhancements
+
+- Resume vs Job Description Match Analyzer
+- ATS Score Breakdown
+- Resume Version History
+- AI Resume Optimizer
+- Advanced Interview Simulation
+
+---
+
+👨‍💻 Author
+
+Nirjhala Mohapatra
+
+AI Career Copilot Project

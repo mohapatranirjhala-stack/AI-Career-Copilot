@@ -110,44 +110,34 @@ Deployment
 https://ai-career-copilot-pwyh9noes-nirjhala-mohapatra-s-projects.vercel.app/
 
 
-📸 Screenshots
+## 📸 Screenshots
 
-Landing Page
+### Landing Page
+![Landing Page](./screenshots/landing%20page.png)
 
-"Landing Page" (./screenshots/landing%20page.png)
+### Dashboard
+![Dashboard](./screenshots/Dashboard.png)
 
-Dashboard
+### ATS Analysis
+![ATS Analysis](./screenshots/Ats%20Analysis.png)
 
-"Dashboard" (./screenshots/Dashboard.png)
+### AI Resume Analysis
+![AI Resume Analysis](./screenshots/Ai%20Resume%20Analysis.png)
 
-ATS Analysis
+### Job Recommendations
+![Job Recommendations](./screenshots/Job%20Recommendation.png)
 
-"ATS Analysis" (./screenshots/Ats%20Analysis.png)
+### Career Learning Roadmap
+![Career Learning Roadmap](./screenshots/Career%20Learning%20Roadmap.png)
 
-AI Resume Analysis
+### AI Interview
+![AI Interview](./screenshots/Ai-Interview.png)
 
-"AI Resume Analysis" (./screenshots/Ai%20Resume%20Analysis.png)
+### Resume Improvement AI
+![Resume Improvement AI](./screenshots/Resume%20Improvement%20Ai.png)
 
-Job Recommendations
-
-"Job Recommendations" (./screenshots/Job%20Recommendation.png)
-
-Career Learning Roadmap
-
-"Career Learning Roadmap" (./screenshots/Career%20Learning%20Roadmap.png)
-
-AI Interview
-
-"AI Interview" (./screenshots/Ai-Interview.png)
-
-Resume Improvement AI
-
-"Resume Improvement AI" (./screenshots/Resume%20Improvement%20Ai.png)
-
-Job Match Analysis
-
-"Job Match Analysis" (./screenshots/job%20Match%20analysis.png)
-
+### Job Match Analysis
+![Job Match Analysis](./screenshots/job%20Match%20analysis.png)
 
 
 🔮 Future Enhancements

@@ -239,6 +239,7 @@ useEffect(() => {
 
       setJobs(
   data.map((job: any) => ({
+    id :job.job_id,
     title: job.job_title,
     company: job.employer_name,
     location:
@@ -1215,10 +1216,10 @@ const handleAddApplication =
       💼 Recommended Jobs
     </h3>
 
-    {jobs.map((job) => (
+    {jobs.map((job,index) => (
 
       <div
-        key={job.title}
+       key={`${job.title}-${job.company}-${index}`}
         className="border-b py-3"
       >
 

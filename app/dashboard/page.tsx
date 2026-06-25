@@ -1309,11 +1309,13 @@ console.log(
           {item.skill}
         </span>
 
-        <span>
-          {Math.round(
-  (item.count / jobs.length) * 100
-)}%
-        </span>
+       <span>
+  {Math.round(
+    (item.count /
+      topSkills[0].count) *
+      100
+  )}%
+</span>
 
       </div>
 

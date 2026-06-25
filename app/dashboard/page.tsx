@@ -56,6 +56,7 @@ const [applyLinks,
 setApplyLinks] =
 useState<any>(null);
 
+
 const [weaknesses, setWeaknesses] =
   useState<string[]>([]);
 
@@ -77,6 +78,11 @@ useState<any[]>([]);
 const [companyName,
 setCompanyName] =
 useState("");
+const [isFallbackMode, setIsFallbackMode] =
+  useState(false);
+
+const [apiWarning, setApiWarning] =
+  useState("");
 
 const [roleName,
 setRoleName] =
@@ -162,10 +168,58 @@ setWeaknesses(
 setSuggestions(
   analysis.suggestions || []
 );
+const roleResponse =
+  await fetch(
+    "/api/recommend-role",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type":
+          "application/json",
+      },
+      body: JSON.stringify({
+        strengths:
+          analysis.strengths || [],
+      }),
+    }
+  );
+
+const roles =
+  await roleResponse.json();
+
+console.log(
+  "TYPE OF ROLES:"
+);
+
+console.log(
+  Array.isArray(roles)
+);
+
+console.log(
+  "FULL ROLES OBJECT:"
+);
+
+console.log(
+  JSON.stringify(
+    roles,
+    null,
+    2
+  )
+);
+
+console.log(
+  "Roles API RESPONSE:"
+  
+);
+console.log(roles)
 
 setRecommendedRoles(
-  analysis.recommendedRoles || []
+  roles
 );
+console.log(
+  "SETTING RECOMMENDED ROLES"
+);
+
 
         }
         const apps =
@@ -208,6 +262,14 @@ console.log(
 
 }, [router]);
 useEffect(() => {
+  console.log(
+  "LOAD JOBS TRIGGERED"
+);
+
+console.log(
+  "CURRENT ROLES:",
+  recommendedRoles
+);
 
   const loadJobs =
     async () => {
@@ -215,8 +277,17 @@ useEffect(() => {
       if (
         recommendedRoles.length === 0
       )
-        return;
+        {
 
+  console.log(
+    "NO ROLES AVAILABLE"
+  );
+
+  return;
+
+}
+console.log("LOAD JOBS STARTED");
+console.log("ROLE SENT:", recommendedRoles[0]?.role);
       const response =
         await fetch(
           "/api/job-recommendations",
@@ -234,8 +305,33 @@ useEffect(() => {
           }
         );
 
-      const data =
-        await response.json();
+      const result =
+  await response.json();
+
+if (
+  result.fallback
+) {
+
+  setIsFallbackMode(true);
+
+  setApiWarning(
+    "Live job feed unavailable due to API quota limits. Showing demonstration data."
+  );
+
+} else {
+
+  setIsFallbackMode(false);
+
+  setApiWarning("");
+
+}
+
+const data =
+  result.jobs;
+        console.log("JOB API RESPONSE");
+console.log(data);
+console.log("NUMBER OF JOBS");
+console.log(data?.length);
 
       setJobs(
   data.map((job: any) => ({
@@ -377,14 +473,59 @@ const marketRankedSkills =
         Number(a.count)
     )
     .slice(0, 5);
+if (
+  result.fallback
+) {
 
-setTopSkills(
-  marketRankedSkills
-);
+  const fallbackSkills = [
 
-setSkillLeaderboard(
-  marketRankedSkills
-);
+    {
+      skill: "AWS",
+      count: 45,
+    },
+
+    {
+      skill: "React",
+      count: 42,
+    },
+
+    {
+      skill: "TypeScript",
+      count: 38,
+    },
+
+    {
+      skill: "Docker",
+      count: 32,
+    },
+
+    {
+      skill: "Python",
+      count: 28,
+    },
+
+  ];
+
+  setTopSkills(
+    fallbackSkills
+  );
+
+  setSkillLeaderboard(
+    fallbackSkills
+  );
+
+} else {
+
+  setTopSkills(
+    marketRankedSkills
+  );
+
+  setSkillLeaderboard(
+    marketRankedSkills
+  );
+
+}
+
 
 console.log(
   "TOP SKILLS"
@@ -415,8 +556,11 @@ console.log(
         }
       );
 
-    const jobs =
-      await response.json();
+    const result =
+  await response.json();
+
+const jobs =
+  result.jobs || [];
 
     const counts = {
 
@@ -431,7 +575,8 @@ console.log(
       fullstack: 0,
 
     };
-
+console.log("MARKET JOBS");
+console.log(jobs);
     jobs.forEach(
       (job: any) => {
 
@@ -514,16 +659,67 @@ console.log(
       (a, b) =>
         b.jobs - a.jobs
     );
+  
+  
 
-    setMarketTrendData(
-      results
-    );
+   if (
+  result.fallback
+) {
+
+  setMarketTrendData([
+
+    {
+      domain: "AI / ML",
+      jobs: 40,
+    },
+
+    {
+      domain: "Cloud",
+      jobs: 35,
+    },
+
+    {
+      domain: "Full Stack",
+      jobs: 30,
+    },
+
+    {
+      domain: "DevOps",
+      jobs: 25,
+    },
+
+    {
+      domain: "Data",
+      jobs: 20,
+    },
+
+  ]);
+
+} else {
+
+  setMarketTrendData(
+    results
+  );
+
+}
 
   };
   
+console.log(
+  "Recommended Roles:",
+  recommendedRoles
+);
 
+console.log(
+  "Resume Analysis:",
+  resumeAnalysis
+);
+  if (
+  recommendedRoles.length > 0
+) {
   loadJobs();
   loadMarketAnalytics();
+}
   
 
 }, [recommendedRoles]);
@@ -755,10 +951,30 @@ const handleAddApplication =
     })
   );
   const mostValuableSkill =
+
   topSkills.length > 0
+
     ? topSkills[0]
-    : null;
-    
+
+    : {
+        skill: "AWS",
+        count: 45,
+      };
+   console.log(
+  "resumeAnalysis state:",
+  resumeAnalysis
+);
+
+console.log(
+  "recommendedRoles state:",
+  recommendedRoles
+);
+
+console.log(
+  "First recommended role:",
+  recommendedRoles?.[0]
+);
+ 
 
   return (
     <div className="flex">
@@ -1211,7 +1427,27 @@ const handleAddApplication =
   
   "
 >
+{
+  apiWarning && (
 
+    <div
+      className="
+      mb-4
+      rounded-lg
+      border
+      border-yellow-500
+      bg-yellow-50
+      p-3
+      text-sm
+      "
+    >
+
+      ⚠️ {apiWarning}
+
+    </div>
+
+  )
+}
     <h3 className="font-bold text-lg mb-4">
       💼 Recommended Jobs
     </h3>

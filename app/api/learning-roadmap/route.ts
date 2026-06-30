@@ -67,7 +67,7 @@ Do not use tables.
           },
         ],
         model:
-          "llama-3.3-70b-versatile",
+          "qwen/qwen3.6-27b",
       });
 
     return NextResponse.json({

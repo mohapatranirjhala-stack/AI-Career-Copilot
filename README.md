@@ -112,9 +112,7 @@ Deployment
 
 🚀 Live Demo
 
-https://ai-career-copilot-lkxk88bz1-nirjhala-mohapatra-s-projects.vercel.app/
-
-
+https://ai-career-copilot-bsxqxp6pq-nirjhala-mohapatra-s-projects.vercel.app/
 ## 📸 Screenshots
 
 ### Landing Page
